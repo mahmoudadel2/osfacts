@@ -5,6 +5,7 @@ import platform
 import fcntl
 import struct
 import socket
+import os
 
 def architecture():
     # Getting arch
@@ -72,3 +73,20 @@ def distribution():
     distid = dist[2]
     distinfo = {'distname': distname, 'version': version, 'id': distid}
     return distinfo
+
+def interfaces():
+    interfacesinfo = dict()
+    interfaces = os.listdir('/sys/class/net/')
+    for interface in interfaces:
+        # Getting IP
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            ip = socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', interface[:15]))[20:24])
+        except IOError:
+            ip = str()
+        # Getting MAC
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        macdata = fcntl.ioctl(s.fileno(), 0x8927,  struct.pack('256s', interface[:15]))
+        mac = str().join(['%02x:' % ord(char) for char in macdata[18:24]])[:-1]
+        interfacesinfo[interface] = {'ipaddress': ip, 'macaddress': mac}
+    return interfacesinfo
