@@ -22,25 +22,32 @@ def disks():
             majorstr = tmplist[0]
             if majorstr in str(major):
                 disk = tmplist[3]
-                if disk[-1:].isdigit(): disk = disk[:-1]
-                if disk not in str(disklist): disklist.append(tmplist[3])
+                if disk[-1:].isdigit():
+                    disk = disk[:-1]
+                if disk not in str(disklist):
+                    disklist.append(tmplist[3])
     # Getting disks model & serial number
     for disk in disklist:
         try:
             with open('/dev/{0}'.format(disk), 'rb') as hd:
+                # Getting disks size
+                req = 0x80081272
+                buf = ' ' * 8
+                fmt = 'L'
+                buf = fcntl.ioctl(hd.fileno(), req, buf)
+                size = struct.unpack(fmt, buf)[0]
+                diskinfo[disk] = {'size': size}
+                # Getting disks model and serial
                 formatstr = "@ 10H 20s 3H 8s 40s 2B H 2B H 4B 6H 2B I 36H I Q 152H"
                 hdioid = 0x030d
                 sizeofhddriveid = struct.calcsize(formatstr)
-                buf = fcntl.ioctl(hd, hdioid, " " * sizeofhddriveid)
+                buf = fcntl.ioctl(hd, hdioid, ' ' * sizeofhddriveid)
                 fields = struct.unpack(formatstr, buf)
                 serial = fields[10].strip()
                 model = fields[15].strip()
-                diskinfo[disk] = {'model': model, 'serial': serial}
+                diskinfo[disk]['model'] = model
+                diskinfo[disk]['serial'] = serial
         except IOError:
-            diskinfo[disk] = {'model': '', 'serial': ''}
+            diskinfo[disk]['model'] = str()
+            diskinfo[disk]['serial'] = str()
     return diskinfo
-
-
-
-
-print disks()
