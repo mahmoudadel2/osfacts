@@ -4,8 +4,10 @@ __author__ = 'Mahmoud Adel <mahmoud.adel2@gmail.com>'
 import platform
 import fcntl
 import struct
+import socket
 
 def architecture():
+    # Getting arch
     return platform.machine()
 
 
@@ -51,3 +53,22 @@ def disks():
             diskinfo[disk]['model'] = str()
             diskinfo[disk]['serial'] = str()
     return diskinfo
+
+def hostname():
+    # Getting hostname
+    hostname = socket.gethostname()
+    return hostname
+
+def fqdn():
+    # Getting FQDN
+    fqdn = socket.getfqdn()
+    return fqdn
+
+def distribution():
+    # Getting distribution
+    dist = platform.linux_distribution()
+    distname = dist[0]
+    version = dist[1]
+    distid = dist[2]
+    distinfo = {'distname': distname, 'version': version, 'id': distid}
+    return distinfo
