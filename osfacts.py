@@ -121,20 +121,19 @@ def memory():
 
 def cpu():
     # Getting CPU info
-    cpuindex=0
+    cpucount=0
     cpuinfo = dict()
     with open('/proc/cpuinfo') as f:
         for line in f:
             if 'model name' in line:
                 model = line.split(':')[1].strip()
-                cpuinfo['processor{0}'.format(cpuindex)] = {'model': model}
-                cpuindex = cpuindex + 1
+                cpuinfo['model'] = model
+                cpucount = cpucount + 1
             if 'flags' in line:
                 if 'vmx' in line or 'svm' in line:
                     virtualization = True
-                    cpuinfo['processor{0}'.format(cpuindex - 1)]['virtualization'] = virtualization
                 else:
                     virtualization = False
-                    cpuinfo['processor{0}'.format(cpuindex - 1)]['virtualization'] = virtualization
-    cpuinfo['processorcount'] = cpuindex
+    cpuinfo['virtualization'] = virtualization
+    cpuinfo['processorcount'] = cpucount
     return cpuinfo
