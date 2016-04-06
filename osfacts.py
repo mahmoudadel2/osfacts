@@ -7,6 +7,7 @@ import struct
 import socket
 import os
 
+
 def architecture():
     # Getting arch
     return platform.machine()
@@ -55,15 +56,18 @@ def disks():
             diskinfo[disk]['serial'] = str()
     return diskinfo
 
+
 def hostname():
     # Getting hostname
     hostname = socket.gethostname()
     return hostname
 
+
 def fqdn():
     # Getting FQDN
     fqdn = socket.getfqdn()
     return fqdn
+
 
 def distribution():
     # Getting distribution
@@ -73,6 +77,7 @@ def distribution():
     distid = dist[2]
     distinfo = {'distname': distname, 'version': version, 'id': distid}
     return distinfo
+
 
 def interfaces():
     interfacesinfo = dict()
@@ -91,9 +96,45 @@ def interfaces():
         interfacesinfo[interface] = {'ipaddress': ip, 'macaddress': mac}
     return interfacesinfo
 
+
 def kernel():
-    kernel = platform.uname()
-    kernelname = kernel[0]
-    kernelrelease = kernel[2]
+    # Getting Kernel info
+    kernelname = platform.system()
+    kernelrelease = platform.release()
     kernelinfo = {'kernelname': kernelname, 'kernelrelease': kernelrelease}
     return kernelinfo
+
+
+def memory():
+    # Getting memory info
+    meminfo = dict()
+    with open('/proc/meminfo') as f:
+        for line in f:
+            if 'MemTotal' in line:
+                memorytotal = int(line.split(':')[1].strip().split()[0]) * 1024
+                meminfo['memorytotal'] = memorytotal
+            if 'SwapTotal' in line:
+                swaptotal = int(line.split(':')[1].strip().split()[0]) * 1024
+                meminfo['swaptotal'] = swaptotal
+    return meminfo
+
+
+def cpu():
+    # Getting CPU info
+    cpuindex=0
+    cpuinfo = dict()
+    with open('/proc/cpuinfo') as f:
+        for line in f:
+            if 'model name' in line:
+                model = line.split(':')[1].strip()
+                cpuinfo['processor{0}'.format(cpuindex)] = {'model': model}
+                cpuindex = cpuindex + 1
+            if 'flags' in line:
+                if 'vmx' in line or 'svm' in line:
+                    virtualization = True
+                    cpuinfo['processor{0}'.format(cpuindex - 1)]['virtualization'] = virtualization
+                else:
+                    virtualization = False
+                    cpuinfo['processor{0}'.format(cpuindex - 1)]['virtualization'] = virtualization
+    cpuinfo['processorcount'] = cpuindex
+    return cpuinfo
