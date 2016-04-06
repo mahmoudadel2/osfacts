@@ -90,3 +90,10 @@ def interfaces():
         mac = str().join(['%02x:' % ord(char) for char in macdata[18:24]])[:-1]
         interfacesinfo[interface] = {'ipaddress': ip, 'macaddress': mac}
     return interfacesinfo
+
+def kernel():
+    kernel = platform.uname()
+    kernelname = kernel[0]
+    kernelrelease = kernel[2]
+    kernelinfo = {'kernelname': kernelname, 'kernelrelease': kernelrelease}
+    return kernelinfo
