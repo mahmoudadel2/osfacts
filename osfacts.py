@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 __author__ = 'Mahmoud Adel <mahmoud.adel2@gmail.com>'
+__license__ = "The MIT License (MIT)"
 
 import platform
 import fcntl
@@ -134,6 +135,25 @@ def cpu():
                     virtualization = True
                 else:
                     virtualization = False
+                if 'ht' in line:
+                    hyperthreading = True
+                else:
+                    hyperthreading = False
+            if 'cpu cores' in line:
+                cpucores = line.split(':')[1].strip()
     cpuinfo['virtualization'] = virtualization
+    cpuinfo['hyperthreading'] = hyperthreading
+    cpuinfo['cpucores'] = cpucores
     cpuinfo['processorcount'] = cpucount
     return cpuinfo
+
+
+def system():
+    with open('/sys/devices/virtual/dmi/id/product_name') as f:
+        productname = f.read().strip()
+    with open('/sys/devices/virtual/dmi/id/board_vendor') as f:
+        boardvendor = f.read().strip()
+    with open('/sys/devices/virtual/dmi/id/chassis_vendor') as f:
+        chassisvendor = f.read().strip()
+    sysinfo = {'productname': productname, 'boardvendor': boardvendor, 'chassisvendor': chassisvendor}
+    return sysinfo
