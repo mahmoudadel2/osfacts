@@ -15,8 +15,7 @@ def architecture():
 
 
 def disks():
-    # Getting disks
-    disklist = list()
+    # Getting disks size
     diskinfo = dict()
     major = (3, 8)
     with open('/proc/partitions') as f:
@@ -29,19 +28,15 @@ def disks():
                 disk = tmplist[3]
                 if disk[-1:].isdigit():
                     disk = disk[:-1]
-                if disk not in str(disklist):
-                    disklist.append(tmplist[3])
+                if disk not in str(diskinfo.keys()):
+                    diskname = tmplist[3]
+                    size = int(tmplist[2]) * 1024
+                    diskinfo[diskname] = dict()
+                    diskinfo[diskname]['size'] = size
     # Getting disks model & serial number
-    for disk in disklist:
+    for disk in diskinfo.keys():
         try:
             with open('/dev/{0}'.format(disk), 'rb') as hd:
-                # Getting disks size
-                req = 0x80081272
-                buf = ' ' * 8
-                fmt = 'L'
-                buf = fcntl.ioctl(hd.fileno(), req, buf)
-                size = struct.unpack(fmt, buf)[0]
-                diskinfo[disk] = {'size': size}
                 # Getting disks model and serial
                 formatstr = "@ 10H 20s 3H 8s 40s 2B H 2B H 4B 6H 2B I 36H I Q 152H"
                 hdioid = 0x030d
