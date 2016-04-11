@@ -144,6 +144,7 @@ def cpu():
 
 
 def system():
+    # Getting system info
     with open('/sys/devices/virtual/dmi/id/product_name') as f:
         productname = f.read().strip()
     with open('/sys/devices/virtual/dmi/id/board_vendor') as f:
@@ -152,3 +153,34 @@ def system():
         chassisvendor = f.read().strip()
     sysinfo = {'productname': productname, 'boardvendor': boardvendor, 'chassisvendor': chassisvendor}
     return sysinfo
+
+
+def partitions():
+    # Getting partitions size
+    partitionsinfo = dict()
+    major = (3, 8)
+    with open('/proc/partitions') as f:
+        for line in f:
+            tmplist = line.split()
+            if len(tmplist) == 0 or not tmplist[0].isdigit():
+                continue
+            majorstr = tmplist[0]
+            if majorstr in str(major):
+                partition = tmplist[3]
+                if partition[-1:].isdigit():
+                    if partition not in str(partitionsinfo.keys()):
+                        partitionname = tmplist[3]
+                        size = int(tmplist[2]) * 1024
+                        partitionsinfo[partitionname] = dict()
+                        partitionsinfo[partitionname]['size'] = size
+                        partitionsinfo[partitionname]['ismounted'] = False
+    # Getting mount point
+    with open('/proc/mounts') as f:
+        for line in f:
+            tmplist = line.split()
+            partition = tmplist[0].split('/')[-1]
+            if partition in partitionsinfo.keys():
+                mountpoint = tmplist[1]
+                partitionsinfo[partition]['ismounted'] = True
+                partitionsinfo[partition]['mountpoint'] = mountpoint
+    return partitionsinfo
